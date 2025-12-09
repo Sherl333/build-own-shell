@@ -24,6 +24,8 @@ def main():
         sys.exit()
     elif command.split(" ")[0] == "echo":
         print(command[5:])
+    elif command == 'pwd':
+        print(os.getcwd())
     elif command.split(" ")[0] == "type":
         if command[5:] in SHELL_BUILTIN:
             print(f"{command[5:]} is a shell builtin")
