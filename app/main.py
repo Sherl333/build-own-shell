@@ -1,6 +1,6 @@
 import sys, os
 
-SHELL_BUILTIN = ["echo", "exit", "type"]
+SHELL_BUILTIN = ["echo", "exit", "type", "pwd"]
 PATH = os.getenv("PATH", "")
 paths = PATH.split(":")
 
