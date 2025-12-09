@@ -1,83 +1,42 @@
-import os
-import sys
-import subprocess
+import sys, os
 
-def find_executable(cmd):
-    """Return the full path of cmd if found in PATH and executable."""
-    for directory in os.getenv("PATH", "").split(os.pathsep):
-        full_path = os.path.join(directory, cmd)
-        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-            return full_path
+SHELL_BUILTIN = ["echo", "exit", "type"]
+PATH = os.getenv("PATH", "")
+paths = PATH.split(":")
+
+
+def find_exec(cmd):
+    for path in paths:
+        full_path = f"{path}/{cmd}"
+        try:
+            with open(full_path):
+                if os.access(full_path, os.X_OK):
+                    return full_path
+        except FileNotFoundError:
+            continue
     return None
 
 
 def main():
-    builtin_commands = ['echo', 'exit', 'type']
-
-    while True:
-        sys.stdout.write("$ ")
-        user_input = input().strip()
-
-        if not user_input:
-            continue
-
-        parts = user_input.split()
-        cmd = parts[0]
-
-        # -------------------------
-        # BUILTIN: exit
-        # -------------------------
-        if cmd == "exit":
-            break
-
-        # -------------------------
-        # BUILTIN: echo
-        # -------------------------
-        elif cmd == "echo":
-            print(" ".join(parts[1:]))
-            continue
-
-        # -------------------------
-        # BUILTIN: type
-        # -------------------------
-        elif cmd == "type":
-            if len(parts) < 2:
-                print("type: missing argument")
-                continue
-
-            target = parts[1]
-
-            # Check builtin
-            if target in builtin_commands:
-                print(f"{target} is a shell builtin")
-                continue
-
-            # Search PATH
-            exe_path = find_executable(target)
-            if exe_path:
-                print(f"{target} is {exe_path}")
-            else:
-                print(f"{target}: not found")
-            continue
-
-        # -------------------------
-        # EXTERNAL PROGRAM
-        # -------------------------
+    sys.stdout.write("$ ")
+    command = input()
+    if command == "exit":
+        sys.exit()
+    elif command.split(" ")[0] == "echo":
+        print(command[5:])
+    elif command.split(" ")[0] == "type":
+        if command[5:] in SHELL_BUILTIN:
+            print(f"{command[5:]} is a shell builtin")
+        elif find_exec(command[5:]):
+            print(f"{command[5:]} is {find_exec(command[5:])}")
         else:
-            exe_path = find_executable(cmd)
-            if exe_path is None:
-                print(f"{cmd}: not found")
-                continue
-
-            # Run the external program with all arguments
-            try:
-                subprocess.run([exe_path] + parts[1:])
-            except Exception as e:
-                print(f"{cmd}: error executing program")
-
-            continue
+            print(f"{command[5:]}: not found")
+    elif find_exec(command.split(" ")[0]):
+        os.system(command)
+    else:
+        print(f"{command}: command not found")
 
 
 if __name__ == "__main__":
-    main()
-
+    while True:
+        main()
