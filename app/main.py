@@ -26,6 +26,11 @@ def main():
         print(command[5:])
     elif command == 'pwd':
         print(os.getcwd())
+    elif command.split(" ")[0] == 'cd':
+        if command[3].startswith('/') and find_exec(command[2:]):
+            os.chdir(find_exec(command[2:]))
+        else:
+            print(f"cd: {command[2:]}: No such file or directory")
     elif command.split(" ")[0] == "type":
         if command[5:] in SHELL_BUILTIN:
             print(f"{command[5:]} is a shell builtin")
