@@ -8,7 +8,11 @@ def main():
         command = input()
         if command == 'exit':
             return False
-        print(f"{command}: command not found")
+        if command.startswith('echo'):
+            messsage = command.split('echo ')[1]
+            print(messsage)
+        else:
+            print(f"{command}: command not found")
         # main()
 
 
