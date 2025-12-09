@@ -2,22 +2,49 @@ import os
 import sys
 import subprocess
 
+def find_executable(cmd):
+    """Return the full path of cmd if found in PATH and executable."""
+    for directory in os.getenv("PATH", "").split(os.pathsep):
+        full_path = os.path.join(directory, cmd)
+        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+            return full_path
+    return None
+
+
 def main():
-    # TODO: Uncomment the code below to pass the first stage
     builtin_commands = ['echo', 'exit', 'type']
+
     while True:
         sys.stdout.write("$ ")
-        command = input().strip()
-        if not command:
+        user_input = input().strip()
+
+        if not user_input:
             continue
-        parts = command.split()
+
+        parts = user_input.split()
         cmd = parts[0]
-        if cmd == 'exit':
+
+        # -------------------------
+        # BUILTIN: exit
+        # -------------------------
+        if cmd == "exit":
             break
-        elif cmd == 'echo':
+
+        # -------------------------
+        # BUILTIN: echo
+        # -------------------------
+        elif cmd == "echo":
             print(" ".join(parts[1:]))
             continue
-        elif cmd == 'type':
+
+        # -------------------------
+        # BUILTIN: type
+        # -------------------------
+        elif cmd == "type":
+            if len(parts) < 2:
+                print("type: missing argument")
+                continue
+
             target = parts[1]
 
             # Check builtin
@@ -32,6 +59,10 @@ def main():
             else:
                 print(f"{target}: not found")
             continue
+
+        # -------------------------
+        # EXTERNAL PROGRAM
+        # -------------------------
         else:
             exe_path = find_executable(cmd)
             if exe_path is None:
@@ -45,14 +76,8 @@ def main():
                 print(f"{cmd}: error executing program")
 
             continue
-def find_executable(cmd):
-
-    for directory in os.getenv("PATH", "").split(os.pathsep):
-        full_path = os.path.join(directory, cmd)
-        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-            return full_path
-    return None
 
 
 if __name__ == "__main__":
     main()
+
