@@ -10,7 +10,7 @@ def main():
         if command == 'exit':
             return False
         elif command.startswith('type'):
-            builtin_commands = ['echo', 'exit']
+            builtin_commands = ['echo', 'exit', 'type']
             typed_input = command.split('type ')[1]
             if typed_input in builtin_commands:
                 print(f"{typed_input} is a shell builtin")
