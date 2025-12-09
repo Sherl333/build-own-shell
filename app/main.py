@@ -1,39 +1,57 @@
 import os
 import sys
-
+import subprocess
 
 def main():
     # TODO: Uncomment the code below to pass the first stage
+    builtin_commands = ['echo', 'exit', 'type']
     while True:
         sys.stdout.write("$ ")
-        command = input()
-        if command == 'exit':
-            return False
-        elif command.startswith('type'):
-            builtin_commands = ['echo', 'exit', 'type']
-            typed_input = command.split('type ')[1]
-            if typed_input in builtin_commands:
-                print(f"{typed_input} is a shell builtin")
-                main()
+        command = input().strip()
+        if not command:
+            continue
+        parts = command.split()
+        cmd = parts[0]
+        if cmd == 'exit':
+            break
+        elif cmd == 'echo':
+            print(" ".join(parts[1:]))
+            continue
+        elif cmd == 'type':
+            target = parts[1]
 
-            path_dirs = os.getenv("PATH","").split(os.pathsep)
-            for directory in path_dirs:
-                if not os.path.isdir(directory):
-                    continue
-                full_path = os.path.join(directory, typed_input)
-                if os.path.isfile(full_path):
-                    # Check execute permission
-                    if os.access(full_path, os.X_OK):
-                        print(f"{typed_input} is {full_path}")
-                        main()
-            print(f"{typed_input}: not found")
+            # Check builtin
+            if target in builtin_commands:
+                print(f"{target} is a shell builtin")
+                continue
 
-        elif command.startswith('echo'):
-            messsage = command.split('echo ')[1]
-            print(messsage)
+            # Search PATH
+            exe_path = find_executable(target)
+            if exe_path:
+                print(f"{target} is {exe_path}")
+            else:
+                print(f"{target}: not found")
+            continue
         else:
-            print(f"{command}: command not found")
-        # main()
+            exe_path = find_executable(cmd)
+            if exe_path is None:
+                print(f"{cmd}: not found")
+                continue
+
+            # Run the external program with all arguments
+            try:
+                subprocess.run([exe_path] + parts[1:])
+            except Exception as e:
+                print(f"{cmd}: error executing program")
+
+            continue
+def find_executable(cmd):
+
+    for directory in os.getenv("PATH", "").split(os.pathsep):
+        full_path = os.path.join(directory, cmd)
+        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+            return full_path
+    return None
 
 
 if __name__ == "__main__":
